@@ -1,0 +1,85 @@
+import cv2
+import pygame
+
+# ---------- SETTINGS ----------
+# change this to the actual file name inside your "audio" folder
+ALARM_FILE = "audio/alert.wav"   # e.g. "audio/alarm.wav" or "audio/alarm.mp3"
+
+EYES_CLOSED_FRAMES_THRESHOLD = 20   # how many frames eyes must be closed before alarm
+# -------------------------------
+
+# init pygame for sound
+pygame.mixer.init()
+
+# load Haar cascades (paths match the project structure)
+face_cascade = cv2.CascadeClassifier("haarcascades/haarcascade_frontalface_default.xml")
+eye_cascade = cv2.CascadeClassifier("haarcascades/haarcascade_eye.xml")
+
+# open webcam
+cap = cv2.VideoCapture(0)
+
+closed_frames = 0
+alarm_on = False
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+
+    eyes_detected = False
+
+    for (x, y, w, h) in faces:
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+
+        roi_gray = gray[y:y + h, x:x + w]
+        roi_color = frame[y:y + h, x:x + w]
+
+        eyes = eye_cascade.detectMultiScale(roi_gray, 1.1, 3)
+
+        for (ex, ey, ew, eh) in eyes:
+            eyes_detected = True
+            cv2.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
+
+    # if a face is seen
+    if len(faces) > 0:
+        if eyes_detected:
+            # eyes open => reset counter & stop alarm
+            closed_frames = 0
+            if alarm_on:
+                pygame.mixer.music.stop()
+                alarm_on = False
+        else:
+            # eyes not detected => treat as closed
+            closed_frames += 1
+            if closed_frames > EYES_CLOSED_FRAMES_THRESHOLD and not alarm_on:
+                try:
+                    pygame.mixer.music.load(ALARM_FILE)
+                    pygame.mixer.music.play(-1)  # loop
+                    alarm_on = True
+                except Exception as e:
+                    print("Error playing sound:", e)
+
+    if alarm_on:
+        cv2.putText(
+            frame,
+            "DROWSY! WAKE UP!",
+            (50, 80),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1.2,
+            (0, 0, 255),
+            3,
+        )
+
+    cv2.imshow("Simple Drowsiness Detector", frame)
+
+    # press 'q' to quit
+    if cv2.waitKey(1) & 0xFF == ord("q"):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
+pygame.mixer.music.stop()

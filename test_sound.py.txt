@@ -1,0 +1,16 @@
+import pygame
+import time
+
+pygame.mixer.init()
+print("Mixer initialized")
+
+pygame.mixer.music.load("audio/alert.wav")
+print("Sound loaded")
+
+pygame.mixer.music.play()
+print("Playing sound for 5 seconds...")
+
+time.sleep(5)
+
+pygame.mixer.music.stop()
+print("Done")
