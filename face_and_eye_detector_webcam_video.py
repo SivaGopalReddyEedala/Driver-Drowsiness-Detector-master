@@ -7,11 +7,13 @@ from twilio.rest import Client
 ALARM_FILE = "audio/alert.wav"          # make sure this file exists
 EYES_CLOSED_FRAMES_THRESHOLD = 5       # lower = faster alarm
 
+import os 
+from twilio.rest import Client
 # Twilio settings – FILL THESE
 ACCOUNT_SID = "AC10d94c6aca5001a528183be2f4b39933"
-AUTH_TOKEN = "f0b7db686411299758e8b216e2059fa6"
-TWILIO_NUMBER = "15856343217"         # your Twilio phone number
-OWNER_NUMBER = "+919392777619"         # owner's mobile number
+AUTH_TOKEN = "c0cf668070719d27ce56ec152655c302"
+TWILIO_NUMBER = "+15856343217"
+OWNER_NUMBER = "+919392777619"
 # ============================
 
 # init pygame for audio
